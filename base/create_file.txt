@@ -1,0 +1,4 @@
+#file_name=data_db_login.py
+NAME = 'enter'
+PASSWD = 'the'
+BASE = 'data'

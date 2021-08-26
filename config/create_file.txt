@@ -1,0 +1,5 @@
+#file_name=bot.ini
+#specify your data
+[tg_bot]
+token = 351515345553453523535:sdfghihbj43vhcjgukhjvhjbkqwertyNO
+admin_id = 12345678987654
