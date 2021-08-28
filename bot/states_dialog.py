@@ -19,6 +19,7 @@ class TaskSG(StatesGroup):
 class MainSG(StatesGroup):
     create_dialogs = State()
     list_tasks = State()
+    view_present= State()
 
 
 class NoteSG(StatesGroup):

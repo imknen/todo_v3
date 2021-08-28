@@ -1,4 +1,6 @@
+from anytree import Node, RenderTree
 from .orm_models import User, Remainder, Task, Note
+
 
 def get_user_info(id):
     query = User.select().where(User.id_user==id)
@@ -58,8 +60,7 @@ def get_task(id_t):
 
 
 def get_tasks():
-    query = Task.select(Task.id_task,
-                        Task.ftitle)
+    query = Task.select()
     ret = {}
     for counter, item in enumerate(query.namedtuples()):
         ret[counter] = item
@@ -71,7 +72,11 @@ def get_remainders():
     return  query
 
 
-def get_notes():
-    query = Note.select()
-    return query
+def get_notes(id_task=None):
+    query = (Note
+             .select(Note.fvolume)
+             .join_from(Note, Task)
+             .where(Task.id_task == id_task))
+    ret = list(item for item in query.namedtuples())
+    return ret
 
