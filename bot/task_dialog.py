@@ -52,10 +52,8 @@ async def on_date_selected(c: CallbackQuery, widget, manager: DialogManager, sel
 
 async def process_result(start_data: Data, result: Any, manager: DialogManager):
     if result.get('id_remainder')is not None:
-        #manager.current_context().dialog_data["id_remainder"] = result["id_remainder"]
         remainder_link_to_task(result["id_remainder"], manager.current_context().dialog_data["id_task"])
     elif result.get('id_note')is not None:
-        #manager.current_context().dialog_data["id_note"] = result["id_note"]
         note_link_to_task(result["id_note"], manager.current_context().dialog_data["id_task"])
 
 
@@ -87,7 +85,7 @@ create_task = Dialog(
     Window(
         Format('{data_task}'),
         Group(
-            SwitchTo(Const("Хочу переписать"),
+            SwitchTo(Const("Изменить"),
                      id='rewrite_task',
                      state=TaskSG.title),
             Button(Const('Сохранить'),

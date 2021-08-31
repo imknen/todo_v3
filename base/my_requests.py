@@ -1,3 +1,4 @@
+from datetime import datetime
 from .orm_models import User, Remainder, Task, Note
 
 
@@ -41,7 +42,7 @@ def remainder_link_to_task(id_remainder, id_task):
     Remainder.update(fparent_id=id_task).where(Remainder.id_remainder == id_remainder).execute()
 
 
-def add_note(data):
+def save_note(data):
     id_new_note = Note.insert(data).execute()
     return id_new_note
 
@@ -59,10 +60,18 @@ def get_task(id_t):
              .execute())
     return query[0]
 
+def check_completed(id_t):
+    (Task
+     .update(fdate_completed=datetime.now())
+     .where(Task.id_task==id_t)
+     .execute())
+
+
 def get_tasks():
     query = (Task
              .select(Task.id_task,
                      Task.ftitle)
+             .where(Task.fdate_completed==None)
              .namedtuples()
              .execute())
     ret = []
