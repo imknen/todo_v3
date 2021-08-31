@@ -1,4 +1,4 @@
-from base.my_requests import add_task, add_remainder, add_note, get_notes
+from base.my_requests import add_task, add_remainder, add_note, get_notes, get_tasks
 from datetime import datetime
 
 """
@@ -15,7 +15,13 @@ for i in range(3):
     add_remainder(data)
     add_note(data1)
     
-"""
+
 
 for iteem  in get_notes(2):
 	print (iteem.fvolume)
+	
+"""
+
+#print(get_task(1).ftitle)
+
+print(get_tasks())

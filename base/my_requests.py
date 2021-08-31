@@ -1,4 +1,3 @@
-from anytree import Node, RenderTree
 from .orm_models import User, Remainder, Task, Note
 
 
@@ -52,31 +51,39 @@ def note_link_to_task(id_note, id_task):
 
 
 def get_task(id_t):
-    query = Task.select().where(id_t==Task.id_task)
-    return [query[0].ftitle,
-            query[0].fdescription,
-            query[0].fstart_date,
-            query[0].fover_date]
-
+    query = (Task
+             .select(Task.ftitle,
+                     Task.fdescription,
+                     Task.fdate_completed)
+             .where(id_t==Task.id_task)
+             .execute())
+    return query[0]
 
 def get_tasks():
-    query = Task.select()
-    ret = {}
-    for counter, item in enumerate(query.namedtuples()):
-        ret[counter] = item
+    query = (Task
+             .select(Task.id_task,
+                     Task.ftitle)
+             .namedtuples()
+             .execute())
+    ret = []
+    for item in query:
+        ret.append((item.ftitle, item.id_task))
     return ret
 
 
 def get_remainders():
-    query = Remainder.select()
+    query = Remainder.select().execute()
     return  query
 
 
 def get_notes(id_task=None):
     query = (Note
              .select(Note.fvolume)
-             .join_from(Note, Task)
-             .where(Task.id_task == id_task))
-    ret = list(item for item in query.namedtuples())
+             .join(Task)
+             .where(Task.id_task == id_task)
+             .execute())
+    ret = []
+    for note in query:
+       ret.append(note.fvolume)
     return ret
 

@@ -16,26 +16,28 @@ async def get_data(dialog_manager: DialogManager, **kwargs):
     return {
         "task_list": dialog_manager.current_context().dialog_data.get("task_list"),
         "size_list": dialog_manager.current_context().dialog_data.get("size_list"),
-        "curr_task": dialog_manager.current_context().dialog_data.get("curr_task")
+        "curr_task": dialog_manager.current_context().dialog_data.get("curr_task"),
+        "id_curr_task": dialog_manager.current_context().dialog_data.get("id_curr_task"),
+        "obj_task": dialog_manager.current_context().dialog_data.get("obj_task"),
+        "list_notes": dialog_manager.current_context().dialog_data.get("list_notes"),
     }
 
 
 async def set_curr_id(manager: DialogManager):
-    manager.current_context().dialog_data["id_curr_task"] = ((await get_data(manager))
-                                                             .get('task_list')[(await get_data(manager))
-                                                                               .get('curr_task')])
+    manager.current_context().dialog_data["id_curr_task"] = int((await get_data(manager))
+                                                                .get('task_list')[(await get_data(manager))
+                                                                                  .get('curr_task')]
+                                                                                  .id_task)
 
 
 async def check_prev(c: CallbackQuery, button: Button, manager: DialogManager):
     if manager.current_context().dialog_data["curr_task"] != 0:
         manager.current_context().dialog_data["curr_task"] -= 1
-        await set_curr_id(manager)
 
 
 async def check_next(c: CallbackQuery, button: Button, manager: DialogManager):
     if manager.current_context().dialog_data["curr_task"] != (await get_data(manager)).get('size_list'):
         manager.current_context().dialog_data["curr_task"] += 1
-        await set_curr_id(manager)
 
 
 async def on_end_dialog(c: CallbackQuery, button: Button, manager: DialogManager):
@@ -46,24 +48,28 @@ async def load_task_list(c: CallbackQuery, button: Button, manager: DialogManage
     manager.current_context().dialog_data["task_list"] = get_tasks()
     manager.current_context().dialog_data['curr_task'] = 0
     manager.current_context().dialog_data["size_list"] = len((await get_data(manager)).get('task_list')) -1
-    await set_curr_id(manager)
     await manager.dialog().next(manager)
 
 
 async def on_selected_task(c: CallbackQuery, button: Button, manager: DialogManager):
-    manager.current_context().dialog_data["list_notes"] = get_notes((await get_data(manager))
-                                                                    .get('id_curr_task'))
+    await set_curr_id(manager)
+    manager.current_context().dialog_data["obj_task"] = get_task((await get_data(manager)).get('id_curr_task'))
+    manager.current_context().dialog_data["list_notes"] = get_notes((await get_data(manager)).get('id_curr_task'))
     await manager.dialog().next(manager)
 
 
 html_text = Jinja("""
 <b>Список задач</b>
 {% for k,v in task_list.items() %}
-{% if k == curr_task %}=>{% else %}  {% endif %}{{v.ftitle}}
+{% if k == curr_task %}⇨{% else %}  {% endif %}{{v.ftitle}}
 {% endfor %}
 """)
-view_task = Jinja("""
 
+view_task = Jinja("""
+<b>{{obj_task.ftitle}}</b>
+{% for v in list_notes %}
+ -{{v}}
+{% endfor %}
 """)
 
 main_dialog = Dialog(
@@ -79,11 +85,11 @@ main_dialog = Dialog(
     ),
     Window(
         html_text,
-        Back(Const('< Вернуться к созданию задач')),
+        Back(Const(' Вернуться к созданию задач')),
         Row(
-            Button(Const('<<'), id='prev', on_click=check_prev),
-            Button(Const('*'), id='select', on_click=on_selected_task),
-            Button(Const('>>'), id='next', on_click=check_next),
+            Button(Const('▲'), id='prev', on_click=check_prev),
+            Button(Const('⚪'), id='select', on_click=on_selected_task),
+            Button(Const('▼'), id='next', on_click=check_next),
         ),
         parse_mode=ParseMode.HTML,
         getter=get_data,
@@ -91,9 +97,8 @@ main_dialog = Dialog(
     ),
     Window(
         view_task,
-        Back(Const('< Вернуться к списку задач')),
+        Back(Const('Назад к списку задач')),
         parse_mode=ParseMode.HTML,
-        #getter= get_data, <------ геттер
-        state=MainSG.view_present
-    ),
+        getter=get_data,state=MainSG.view_present
+    )
 )
